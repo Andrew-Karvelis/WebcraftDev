@@ -24,8 +24,8 @@ export default function UserPost() {
   };
 
   const handleOpen = (postId: number) => {
-    setCurrPostId(postId);
     setModalOpen(true);
+    setCurrPostId(postId);
   };
   const handleClose = () => {
     setModalOpen(false);
@@ -34,7 +34,6 @@ export default function UserPost() {
 
   const currPost = userPosts.find((post) => post.id === currPostId);
 
-  console.log(modalOpen);
   return (
     <div className="flex flex-col justify-center items-center">
       {userPosts.map((post) => (
@@ -83,45 +82,48 @@ export default function UserPost() {
                   </button>
                 </DialogTrigger>
                 <DialogContent className="w-full max-w-2xl p-4 md:p-8 lg:p-12 mx-auto h-full max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-center border-b-2 pb-4">
-                      {post.userName}'s Post
-                    </DialogTitle>
-                    <DialogDescription className="border-b-2 p-2">
-                      {post.post}
-                    </DialogDescription>
-                  </DialogHeader>
-                  {currPost &&
-                    currPost.comments.map((comment) => (
-                      <div
-                        key={comment.timestamp}
-                      >
-                        <div className="flex flex-row items-center">
-                          <div className="bg-blue-200 rounded-full border border-red-500 h-10 w-10 m-1"></div>
-                          <div className="flex flex-col ml-2">
-                            <div className="text-sm bg-slate-300 rounded-sm p-2">
-                              <h2 className="font-bold">{comment.userName}</h2>
-                              <p>{comment.comment}</p>
-                            </div>
-                            <div className="flex flex-row text-xs gap-4">
-                              <p className="text-gray-500 text-xs">
-                                {timeAgo(comment.timestamp)}
-                              </p>
-                              <button
-                                className={`hover:bg-gray-300 rounded-md transition-all ${
-                                  isClicked &&
-                                  "transform translate-y-0.5 transition-all duration-0"
-                                }`}
-                                onClick={handleClick}
-                              >
-                                Like
-                              </button>
-                              <div>{comment.likes}THUMB</div>
+                  {currPost && (
+                    <>
+                      <DialogHeader>
+                        <DialogTitle className="text-center border-b-2 pb-4">
+                          {currPost.userName}'s Post
+                        </DialogTitle>
+                        <DialogDescription className="border-b-2 p-2">
+                          {currPost.post}
+                        </DialogDescription>
+                      </DialogHeader>
+                      {currPost.comments.map((comment) => (
+                        <div key={comment.id}>
+                          <div className="flex flex-row items-center">
+                            <div className="bg-blue-200 rounded-full border border-red-500 h-10 w-10 m-1"></div>
+                            <div className="flex flex-col ml-2">
+                              <div className="text-sm bg-slate-300 rounded-sm p-2">
+                                <h2 className="font-bold">
+                                  {comment.userName}
+                                </h2>
+                                <p>{comment.comment}</p>
+                              </div>
+                              <div className="flex flex-row text-xs gap-4">
+                                <p className="text-gray-500 text-xs">
+                                  {timeAgo(comment.timestamp)}
+                                </p>
+                                <button
+                                  className={`hover:bg-gray-300 rounded-md transition-all ${
+                                    isClicked &&
+                                    "transform translate-y-0.5 transition-all duration-0"
+                                  }`}
+                                  onClick={handleClick}
+                                >
+                                  Like
+                                </button>
+                                <div>{comment.likes}THUMB</div>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </>
+                  )}
                   <textarea
                     className="w-full h-24 p-2 border resize-none border-gray-300 rounded-md mt-2"
                     placeholder="Write a comment..."
@@ -163,6 +165,7 @@ const userPosts = [
     likes: 23,
     comments: [
       {
+        id: 1,
         userName: "Alex D.",
         likes: 3,
         comment: "Great post!",
@@ -179,6 +182,7 @@ const userPosts = [
     likes: 17,
     comments: [
       {
+        id: 1,
         userName: "Sam T.",
         likes: 1,
         comment: "Interesting perspective!",
@@ -195,18 +199,46 @@ const userPosts = [
     likes: 15,
     comments: [
       {
+        id: 1,
         userName: "Sam B",
         likes: 2,
         comment: "Interesting!",
         timestamp: "2024-07-31",
       },
       {
+        id: 2,
+
         userName: "Adam C",
         likes: 0,
         comment: "Good work mate!",
         timestamp: "2024-07-31",
       },
       {
+        id: 3,
+
+        userName: "Crew Sader",
+        likes: 5,
+        comment: "Try JavaScript instead for a successful life!",
+        timestamp: "2024-07-31",
+      },
+      {
+        id: 4,
+        userName: "Sam B",
+        likes: 2,
+        comment: "Interesting!",
+        timestamp: "2024-07-31",
+      },
+      {
+        id: 5,
+
+        userName: "Adam C",
+        likes: 0,
+        comment: "Good work mate!",
+        timestamp: "2024-07-31",
+      },
+      {
+        id: 6,
+
         userName: "Crew Sader",
         likes: 5,
         comment: "Try JavaScript instead for a successful life!",
