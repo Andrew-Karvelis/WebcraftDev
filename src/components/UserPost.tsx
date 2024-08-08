@@ -27,6 +27,7 @@ export default function UserPost() {
     setModalOpen(true);
     setCurrPostId(postId);
   };
+
   const handleClose = () => {
     setModalOpen(false);
     setCurrPostId(null);
@@ -39,7 +40,7 @@ export default function UserPost() {
       {userPosts.map((post) => (
         <div
           key={post.id}
-          className="bg-slate-300 p-4 flex-col rounded-2xl mb-4 w-full max-w-xl mx-auto"
+          className="bg-slate-300 p-4 rounded-2xl mb-4 w-full max-w-xl mx-auto"
         >
           <div className="flex flex-row items-center">
             <div className="bg-blue-200 rounded-full border border-red-500 h-14 w-14 m-1"></div>
@@ -69,76 +70,80 @@ export default function UserPost() {
               >
                 Like
               </button>
-              <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-                <DialogTrigger asChild>
-                  <button
-                    className={`hover:bg-gray-300 rounded-md w-36 transition-all ${
-                      isClicked &&
-                      "transform translate-y-0.5 transition-all duration-0"
-                    }`}
-                    onClick={() => handleOpen(post.id)}
-                  >
-                    Comment
-                  </button>
-                </DialogTrigger>
-                <DialogContent className="w-full max-w-2xl p-4 md:p-8 lg:p-12 mx-auto h-full max-h-[80vh] overflow-y-auto">
-                  {currPost && (
-                    <>
-                      <DialogHeader>
-                        <DialogTitle className="text-center border-b-2 pb-4">
-                          {currPost.userName}'s Post
-                        </DialogTitle>
-                        <DialogDescription className="border-b-2 p-2">
-                          {currPost.post}
-                        </DialogDescription>
-                      </DialogHeader>
-                      {currPost.comments.map((comment) => (
-                        <div key={comment.id}>
-                          <div className="flex flex-row items-center">
-                            <div className="bg-blue-200 rounded-full border border-red-500 h-10 w-10 m-1"></div>
-                            <div className="flex flex-col ml-2">
-                              <div className="text-sm bg-slate-300 rounded-sm p-2">
-                                <h2 className="font-bold">
-                                  {comment.userName}
-                                </h2>
-                                <p>{comment.comment}</p>
-                              </div>
-                              <div className="flex flex-row text-xs gap-4">
-                                <p className="text-gray-500 text-xs">
-                                  {timeAgo(comment.timestamp)}
-                                </p>
-                                <button
-                                  className={`hover:bg-gray-300 rounded-md transition-all ${
-                                    isClicked &&
-                                    "transform translate-y-0.5 transition-all duration-0"
-                                  }`}
-                                  onClick={handleClick}
-                                >
-                                  Like
-                                </button>
-                                <div>{comment.likes}THUMB</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                  <textarea
-                    className="w-full h-24 p-2 border resize-none border-gray-300 rounded-md mt-2"
-                    placeholder="Write a comment..."
-                  />
-                </DialogContent>
-              </Dialog>
+              <button
+                className={`hover:bg-gray-300 rounded-md w-36 transition-all ${
+                  isClicked &&
+                  "transform translate-y-0.5 transition-all duration-0"
+                }`}
+                onClick={() => handleOpen(post.id)}
+              >
+                Comment
+              </button>
             </div>
           </div>
         </div>
       ))}
+
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogTrigger asChild>
+          <button className="hidden">Open Dialog</button>
+        </DialogTrigger>
+        <DialogContent className="w-full max-w-2xl p-4 md:p-8 lg:p-12 mx-auto h-full max-h-[90vh] overflow-y-auto">
+          {currPost && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-center border-b-2 pb-4 text-green-500">
+                  {currPost.userName}'s Post
+                </DialogTitle>
+                <DialogDescription className="border-b-2 p-4 text-red-500">
+                  {currPost.post}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-2  max-h-[70vh]">
+                {currPost.comments.map((comment) => (
+                  <div key={comment.id} className="flex">
+                    <div className="bg-blue-200 rounded-full border border-red-500 h-10 w-10 m-1"></div>
+                    <div className="flex flex-col ml-2">
+                      <div className="text-sm bg-slate-300 rounded-sm p-2">
+                        <h2 className="font-bold">{comment.userName}</h2>
+                        <p>{comment.comment}</p>
+                      </div>
+                      <div className="flex flex-row text-xs gap-4">
+                        <p className="text-gray-500 text-xs">
+                          {timeAgo(comment.timestamp)}
+                        </p>
+                        <button
+                          className={`hover:bg-gray-300 rounded-md transition-all ${
+                            isClicked &&
+                            "transform translate-y-0.5 transition-all duration-0"
+                          }`}
+                          onClick={handleClick}
+                        >
+                          Like
+                        </button>
+                        <div>{comment.likes}THUMB</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          <div className="absolute bottom-0 right-2 flex">
+            <div className="bg-blue-600 rounded-full border border-red-500 h-10 w-10 mr-3 text-center">YOU</div>
+            <textarea
+              className=" w-[600px] h-14 p-2 mb-2 border resize-none border-gray-300 rounded-md "
+              placeholder="Write a comment..."
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
 interface Comment {
+  id: number;
   userName: string;
   likes: number;
   comment: string;
@@ -155,7 +160,7 @@ interface Post {
   comments: Comment[];
 }
 
-const userPosts = [
+const userPosts: Post[] = [
   {
     id: 1,
     userName: "JoeMan",
@@ -207,7 +212,6 @@ const userPosts = [
       },
       {
         id: 2,
-
         userName: "Adam C",
         likes: 0,
         comment: "Good work mate!",
@@ -215,7 +219,6 @@ const userPosts = [
       },
       {
         id: 3,
-
         userName: "Crew Sader",
         likes: 5,
         comment: "Try JavaScript instead for a successful life!",
@@ -230,7 +233,6 @@ const userPosts = [
       },
       {
         id: 5,
-
         userName: "Adam C",
         likes: 0,
         comment: "Good work mate!",
@@ -238,7 +240,6 @@ const userPosts = [
       },
       {
         id: 6,
-
         userName: "Crew Sader",
         likes: 5,
         comment: "Try JavaScript instead for a successful life!",
