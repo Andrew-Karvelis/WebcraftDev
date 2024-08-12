@@ -1,13 +1,16 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import UserPost from "@/components/UserPost";
+import Navbar from "@/components/ui/Navbar";
+import NewPost from "@/components/NewPost";
 
 export default function Home() {
   return (
-    <div>
-      <UserPost />
-      
+    <div className="bg-yellow-100">
+      <Navbar />
+      <div className="pt-20">
+        <NewPost />
+        <UserPost />
+      </div>
     </div>
   );
 }

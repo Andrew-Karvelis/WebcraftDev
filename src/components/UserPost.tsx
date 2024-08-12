@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import {ThumbsUp, MessageSquareIcon, Send } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export default function UserPost() {
     setCurrPostId(null);
   };
 
+
   const currPost = userPosts.find((post) => post.id === currPostId);
 
   return (
@@ -57,8 +59,8 @@ export default function UserPost() {
 
           <div className="flex flex-col mt-4">
             <div className="flex flex-row gap-4 justify-end">
-              <div>{post.likes}</div>
-              <div>{post.comments.length}</div>
+              <div className="flex gap-2">{post.likes} <ThumbsUp /></div>
+              <div className="flex gap-2">{post.comments.length} <MessageSquareIcon /></div>
             </div>
             <div className="flex flex-row gap-4 justify-center mt-4">
               <button
@@ -121,7 +123,7 @@ export default function UserPost() {
                         >
                           Like
                         </button>
-                        <div>{comment.likes}THUMB</div>
+                        <div className="flex">{comment.likes}<ThumbsUp className="h-4" /></div>
                       </div>
                     </div>
                   </div>
@@ -132,9 +134,12 @@ export default function UserPost() {
           <div className="absolute bottom-0 right-2 flex">
             <div className="bg-blue-600 rounded-full border border-red-500 h-10 w-10 mr-3 text-center">YOU</div>
             <textarea
-              className=" w-[600px] h-14 p-2 mb-2 border resize-none border-gray-300 rounded-md "
+              className="relative w-[600px] h-24 p-2 mb-2 border resize-none border-gray-300 rounded-md overflow-y-auto"
               placeholder="Write a comment..."
             />
+            <button className="absolute bottom-3 right-6">
+            <Send className="w-5 h-5" />
+          </button>
           </div>
         </DialogContent>
       </Dialog>
@@ -244,6 +249,40 @@ const userPosts: Post[] = [
         likes: 5,
         comment: "Try JavaScript instead for a successful life!",
         timestamp: "2024-07-31",
+      },
+    ],
+  },
+  {
+    id: 4,
+    userName: "Biscuit",
+    userTitle: "Coffee Addict",
+    post: "bouncing off the walls",
+    timestamp: "2024-08-8",
+    likes: 23,
+    comments: [
+      {
+        id: 1,
+        userName: "Alex D.",
+        likes: 3,
+        comment: "Great post!",
+        timestamp: "2024-08-09",
+      },
+    ],
+  },
+  {
+    id: 5,
+    userName: "Biscuit",
+    userTitle: "Coffee Addict",
+    post: "bouncing off the walls",
+    timestamp: "2024-08-8",
+    likes: 23,
+    comments: [
+      {
+        id: 1,
+        userName: "Alex D.",
+        likes: 3,
+        comment: "Great post!",
+        timestamp: "2024-08-09",
       },
     ],
   },

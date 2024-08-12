@@ -1,13 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import logo from "../../../public/logo.png";
-import {
-  SignInButton,
-  SignOutButton,
-  UserButton,
-  SignedIn,
-  SignedOut,
-} from "@clerk/nextjs";
+
 
 export default function Navbar() {
   return (
@@ -21,15 +15,8 @@ export default function Navbar() {
           placeholder="Search..."
         />
       </div>
-      <SignedIn>
         <div className="flex gap-2">
-          <UserButton />
-          <SignOutButton />
         </div>
-      </SignedIn>
-      <SignedOut>
-        <SignInButton />
-      </SignedOut>
     </nav>
   );
 }
