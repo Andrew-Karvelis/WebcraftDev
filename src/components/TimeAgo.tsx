@@ -9,27 +9,27 @@ export function timeAgo(date: string | Date): string {
   }
 
   interval = Math.floor(seconds / 2592000); // Months
-  if (interval > 1) {
+  if (interval >= 1) {
     return interval + "m";
   }
 
   interval = Math.floor(seconds / 604800); // Weeks
-  if (interval > 1) {
+  if (interval >= 1) {
     return interval + "w";
   }
 
   interval = Math.floor(seconds / 86400); // Days
-  if (interval > 1) {
+  if (interval >= 1) {
     return interval + "d";
   }
 
   interval = Math.floor(seconds / 3600); // Hours
-  if (interval > 1) {
+  if (interval >= 1) {
     return interval + "h";
   }
 
   interval = Math.floor(seconds / 60); // Minutes
-  if (interval > 1) {
+  if (interval >= 1) {
     return interval + "m";
   }
 

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import {ThumbsUp, MessageSquareIcon, Send } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ThumbsUp, MessageSquareIcon, Send } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,19 +10,45 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebaseConfig";
 import { timeAgo } from "./TimeAgo";
+
+interface Comment {
+  id: string;
+  userName: string;
+  content: string;
+  createdAt: FirebaseFirestore.Timestamp;
+  likes:number;
+}
+
+interface Post {
+  id: string;
+  userName: string | null;
+  userTitle: string;
+  content: string;
+  createdAt: FirebaseFirestore.Timestamp;
+  likes: number;
+  comments: Comment[];
+}
 
 export default function UserPost() {
   const [isClicked, setIsClicked] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [currPostId, setCurrPostId] = useState<number | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
 
-  const handleClick = () => {
-    setIsClicked(true);
-    setTimeout(() => {
-      setIsClicked(false);
-    }, 100);
-  };
+  useEffect(() => {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const postsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Post[];
+      setPosts(postsData);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleOpen = (postId: number) => {
     setModalOpen(true);
@@ -34,12 +60,9 @@ export default function UserPost() {
     setCurrPostId(null);
   };
 
-
-  const currPost = userPosts.find((post) => post.id === currPostId);
-
   return (
     <div className="flex flex-col justify-center items-center">
-      {userPosts.map((post) => (
+      {posts.map((post) => (
         <div
           key={post.id}
           className="bg-slate-300 p-4 rounded-2xl mb-4 w-full max-w-xl mx-auto"
@@ -47,37 +70,41 @@ export default function UserPost() {
           <div className="flex flex-row items-center">
             <div className="bg-blue-200 rounded-full border border-red-500 h-14 w-14 m-1"></div>
             <div className="flex flex-col ml-2">
-              <h2 className="font-bold ">{post.userName}</h2>
+              <h2 className="font-bold ">{post.userName ?? "Anonymous"}</h2>
               <h3 className="text-gray-600 text-sm">{post.userTitle}</h3>
-              <p className="text-gray-500 text-xs">{timeAgo(post.timestamp)}</p>
+              <p className="text-gray-500 text-xs">
+                {timeAgo(post.createdAt.toDate())}
+              </p>
             </div>
           </div>
 
           <div className="mt-4">
-            <p>{post.post}</p>
+            <p>{post.content}</p>
           </div>
 
           <div className="flex flex-col mt-4">
             <div className="flex flex-row gap-4 justify-end">
-              <div className="flex gap-2">{post.likes} <ThumbsUp /></div>
-              <div className="flex gap-2">{post.comments.length} <MessageSquareIcon /></div>
+              <div className="flex gap-2">
+                {post.likes} <ThumbsUp />
+              </div>
+              <div className="flex gap-2">
+                {post.comments?.length} <MessageSquareIcon />
+              </div>
             </div>
             <div className="flex flex-row gap-4 justify-center mt-4">
               <button
-                className={`hover:bg-gray-300 rounded-md w-36 transition-all ${
-                  isClicked &&
-                  "transform translate-y-0.5 transition-all duration-0"
+                className={`hover:bg-white relative rounded-md w-36 overflow-hidden transition-all
                 }`}
-                onClick={handleClick}
               >
-                Like
+                <span className="absolute inset-0  opacity-50"></span>
+                <span className="relative z-10">Like</span>
               </button>
               <button
-                className={`hover:bg-gray-300 rounded-md w-36 transition-all ${
+                className={`hover:bg-white rounded-md w-36 transition-all ${
                   isClicked &&
-                  "transform translate-y-0.5 transition-all duration-0"
+                  "transform translate-y-0.5 transition-all duration-300"
                 }`}
-                onClick={() => handleOpen(post.id)}
+                // onClick={() => handleOpen(post.id)}
               >
                 Comment
               </button>
@@ -86,7 +113,7 @@ export default function UserPost() {
         </div>
       ))}
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+      {/* <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogTrigger asChild>
           <button className="hidden">Open Dialog</button>
         </DialogTrigger>
@@ -119,11 +146,13 @@ export default function UserPost() {
                             isClicked &&
                             "transform translate-y-0.5 transition-all duration-0"
                           }`}
-                          onClick={handleClick}
                         >
                           Like
                         </button>
-                        <div className="flex">{comment.likes}<ThumbsUp className="h-4" /></div>
+                        <div className="flex">
+                          {comment.likes}
+                          <ThumbsUp className="h-4" />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -132,158 +161,19 @@ export default function UserPost() {
             </>
           )}
           <div className="absolute bottom-0 right-2 flex">
-            <div className="bg-blue-600 rounded-full border border-red-500 h-10 w-10 mr-3 text-center">YOU</div>
+            <div className="bg-blue-600 rounded-full border border-red-500 h-10 w-10 mr-3 text-center">
+              YOU
+            </div>
             <textarea
               className="relative w-[600px] h-24 p-2 mb-2 border resize-none border-gray-300 rounded-md overflow-y-auto"
               placeholder="Write a comment..."
             />
             <button className="absolute bottom-3 right-6">
-            <Send className="w-5 h-5" />
-          </button>
+              <Send className="w-5 h-5" />
+            </button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }
-
-interface Comment {
-  id: number;
-  userName: string;
-  likes: number;
-  comment: string;
-  timestamp: string;
-}
-
-interface Post {
-  id: number;
-  userName: string;
-  userTitle: string;
-  post: string;
-  timestamp: string;
-  likes: number;
-  comments: Comment[];
-}
-
-const userPosts: Post[] = [
-  {
-    id: 1,
-    userName: "JoeMan",
-    userTitle: "Backend Bandit",
-    post: "I am chillin",
-    timestamp: "2024-07-31",
-    likes: 23,
-    comments: [
-      {
-        id: 1,
-        userName: "Alex D.",
-        likes: 3,
-        comment: "Great post!",
-        timestamp: "2024-07-31",
-      },
-    ],
-  },
-  {
-    id: 2,
-    userName: "Trum Pet",
-    userTitle: "Frontend Flash",
-    post: "The rock be cookin",
-    timestamp: "2024-07-31T14:00:00Z",
-    likes: 17,
-    comments: [
-      {
-        id: 1,
-        userName: "Sam T.",
-        likes: 1,
-        comment: "Interesting perspective!",
-        timestamp: "2024-07-31",
-      },
-    ],
-  },
-  {
-    id: 3,
-    userName: "Boss",
-    userTitle: "The Boss",
-    post: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dignissimos, repellat quam odit illo sapiente possimus temporibus ipsam excepturi repudiandae. Quia a ex quasi nostrum voluptatum expedita magnam placeat fuga deserunt.",
-    timestamp: "2024-07-31",
-    likes: 15,
-    comments: [
-      {
-        id: 1,
-        userName: "Sam B",
-        likes: 2,
-        comment: "Interesting!",
-        timestamp: "2024-07-31",
-      },
-      {
-        id: 2,
-        userName: "Adam C",
-        likes: 0,
-        comment: "Good work mate!",
-        timestamp: "2024-07-31",
-      },
-      {
-        id: 3,
-        userName: "Crew Sader",
-        likes: 5,
-        comment: "Try JavaScript instead for a successful life!",
-        timestamp: "2024-07-31",
-      },
-      {
-        id: 4,
-        userName: "Sam B",
-        likes: 2,
-        comment: "Interesting!",
-        timestamp: "2024-07-31",
-      },
-      {
-        id: 5,
-        userName: "Adam C",
-        likes: 0,
-        comment: "Good work mate!",
-        timestamp: "2024-07-31",
-      },
-      {
-        id: 6,
-        userName: "Crew Sader",
-        likes: 5,
-        comment: "Try JavaScript instead for a successful life!",
-        timestamp: "2024-07-31",
-      },
-    ],
-  },
-  {
-    id: 4,
-    userName: "Biscuit",
-    userTitle: "Coffee Addict",
-    post: "bouncing off the walls",
-    timestamp: "2024-08-8",
-    likes: 23,
-    comments: [
-      {
-        id: 1,
-        userName: "Alex D.",
-        likes: 3,
-        comment: "Great post!",
-        timestamp: "2024-08-09",
-      },
-    ],
-  },
-  {
-    id: 5,
-    userName: "Biscuit",
-    userTitle: "Coffee Addict",
-    post: "bouncing off the walls",
-    timestamp: "2024-08-8",
-    likes: 23,
-    comments: [
-      {
-        id: 1,
-        userName: "Alex D.",
-        likes: 3,
-        comment: "Great post!",
-        timestamp: "2024-08-09",
-      },
-    ],
-  },
-];

@@ -4,20 +4,29 @@ import Image from "next/image";
 import logo from "../../../public/logo.png";
 import AuthSignin from "../auth/AuthModal";
 import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebaseConfig";
 
 export default function Navbar() {
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     const auth = getAuth();
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log("auth state changed ", user);
       if (user) {
         setUser(user);
+
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          setUsername(userDoc.data()?.username || null);
+        }
       } else {
         setUser(null);
+        setUsername(null);
       }
     });
     return () => unsubscribe();
@@ -35,6 +44,7 @@ export default function Navbar() {
     signOut(auth)
       .then(() => {
         setUser(null);
+        setUsername(null);
         console.log("User logged out");
       })
       .catch((error) => {
@@ -57,7 +67,7 @@ export default function Navbar() {
 
         {user ? (
           <div>
-            <span className="mr-8">Welcome, {user.email}</span>
+            <span className="mr-8">Welcome, {username ? username : user.email}</span>
             <button onClick={handleLogout}>Logout</button>
           </div>
         ) : (

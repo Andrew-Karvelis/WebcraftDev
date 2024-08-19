@@ -2,6 +2,7 @@ import React from "react";
 import UserPost from "@/components/UserPost";
 import Navbar from "@/components/ui/Navbar";
 import NewPost from "@/components/NewPost";
+import UserPostTwo from "@/components/UserPostTwo";
 
 export default function Home() {
   return (
@@ -9,7 +10,7 @@ export default function Home() {
       <Navbar />
       <div className="pt-20">
         <NewPost />
-        <UserPost />
+        <UserPostTwo />
       </div>
     </div>
   );

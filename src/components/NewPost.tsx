@@ -2,16 +2,32 @@
 import React, { useState } from "react";
 import { Send, Image } from "lucide-react";
 import { addPost } from "../lib/firestoreService";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/lib/firebaseConfig";
 
 export default function NewPost() {
   const [content, setContent] = useState("");
+  const [user] = useAuthState(auth);
 
-  const handleSubmit = async () => {
-    if (!content.trim()) return;
-    await addPost(content);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!user) {
+      alert("You must be logged in to make a post!");
+      return;
+    }
+
+    if (!content.trim()) {
+      alert("Post cannot be left empty!");
+      return;
+    }
+    await addPost({
+      content: content.trim(),
+      userId: user.uid,
+      userName: user.displayName || user.email,
+    });
     setContent("");
   };
-// ADD CHECK IF USER IS AUTHENTICATED HERE
   return (
     <div className="bg-slate-300 p-4 rounded-2xl mb-4 w-full max-w-xl mx-auto">
       <div className="flex items-center">
