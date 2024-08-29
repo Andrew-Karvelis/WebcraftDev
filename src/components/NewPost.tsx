@@ -26,6 +26,7 @@ export default function NewPost() {
       userId: user.uid,
       userName: user.displayName || user.email,
     });
+    alert('Post successfully submitted')
     setContent("");
   };
   return (

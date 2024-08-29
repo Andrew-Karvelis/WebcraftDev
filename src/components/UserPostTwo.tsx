@@ -5,77 +5,104 @@ import {
   collection,
   query,
   orderBy,
-  onSnapshot,
   updateDoc,
   doc,
   increment,
-  addDoc,
-  serverTimestamp,
+  arrayRemove,
+  arrayUnion,
+  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
-import { db } from "@/lib/firebaseConfig";
+
+import { db, auth } from "@/lib/firebaseConfig";
 import { timeAgo } from "./TimeAgo";
-
-interface Comment {
-  id: string;
-  userName: string;
-  content: string;
-  timestamp: any;
-  likes: number;
-}
-
-interface Post {
-  id: string;
-  userName: string | null;
-  userTitle: string;
-  content: string;
-  createdAt: FirebaseFirestore.Timestamp;
-  likes: number;
-  comments: Comment[];
-}
+import { MessageSquareIcon, Send, ThumbsDown, ThumbsUp } from "lucide-react";
+import { ThumbsUp as SolidThumbsUp } from "lucide-react";
+import CommentModal from "./ui/CommentModal";
+import { Post, Comment } from "@/types/interfaces";
 
 export default function UserPostTwo() {
   const [posts, setPosts] = useState<Post[]>([]);
-
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [currPostId, setCurrPostId] = useState<string | null>(null);
   useEffect(() => {
-    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Post[];
-      setPosts(postsData);
-    });
-    return () => unsubscribe();
+    const fetchPostsAndComments = () => {
+      const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  
+      const unsubscribePosts = onSnapshot(q, (snapshot) => {
+        const postsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Post[];
+  
+        // Fetch comments for each post with real-time updates
+        postsData.forEach((post, index) => {
+          const commentsRef = collection(db, "posts", post.id, "comments");
+          const unsubscribeComments = onSnapshot(commentsRef, (commentsSnapshot) => {
+            const comments = commentsSnapshot.docs.map((commentDoc) => ({
+              id: commentDoc.id,
+              ...commentDoc.data(),
+            })) as Comment[];
+  
+            // Update the postsData with the fetched comments
+            postsData[index].comments = comments;
+            setPosts([...postsData]); // Ensure state updates correctly
+          });
+  
+          // Clean up the comments listener
+          return () => unsubscribeComments();
+        });
+      });
+  
+      // Clean up the posts listener
+      return () => unsubscribePosts();
+    };
+  
+    fetchPostsAndComments();
   }, []);
+
+  const handleOpenModal = (postId: string) => {
+    console.log("this ran");
+    setCurrPostId(postId);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setCurrPostId(null);
+  };
+
+  const selectedPost = posts.find((post) => post.id === currPostId);
 
   return (
     <div className="flex flex-col justify-center items-center">
       {posts.map((post) => (
-        <PostItem key={post.id} post={post} />
+        <PostItem key={post.id} post={post} handleOpenModal={handleOpenModal} />
       ))}
+
+      {modalOpen && selectedPost && (
+        <CommentModal
+          post={selectedPost}
+          modalOpen={modalOpen}
+          setModalOpen={setModalOpen}
+        />
+      )}
     </div>
   );
 }
 
-const handleAddPost = async () => {
-  try {
-    await addDoc(collection(db, "posts"), {
-      title: "My New Post",
-      content: "Post content goes here...",
-      createdAt: serverTimestamp(),
-      // other fields...
-    });
-  } catch (error) {
-    console.error("Error adding document: ", error);
-  }
-};
-
-function PostItem({ post }: { post: Post }) {
+function PostItem({
+  post,
+  handleOpenModal,
+}: {
+  post: Post;
+  handleOpenModal: (postId: string) => void;
+}) {
   return (
     <div className="bg-slate-300 p-4 rounded-2xl mb-4 w-full max-w-xl mx-auto">
       <PostHeader post={post} />
       <p className="mt-4">{post.content}</p>
-      <PostActions postId={post.id} />
+      <PostActions post={post} handleOpenModal={handleOpenModal} />
     </div>
   );
 }
@@ -94,24 +121,71 @@ function PostHeader({ post }: { post: Post }) {
   );
 }
 
-function PostActions({ postId }: { postId: string }) {
-  const handleLike = async (postId: string) => {
-    const postRef = doc(db, "posts", postId);
-    await updateDoc(postRef, {
-      likes: increment(1),
-    });
+function PostActions({
+  post,
+  handleOpenModal,
+}: {
+  post: Post;
+  handleOpenModal: (postId: string) => void;
+}) {
+  const [isLiked, setIsLiked] = useState(false);
+  const currentUser = auth.currentUser;
+
+  useEffect(() => {
+    if (currentUser && post.likedBy?.includes(currentUser.uid)) {
+      setIsLiked(true);
+    }
+  }, [currentUser, post.likedBy]);
+
+  const handleLike = async () => {
+    if (!currentUser) return;
+
+    const postRef = doc(db, "posts", post.id);
+
+    if (isLiked) {
+      await updateDoc(postRef, {
+        likes: increment(-1),
+        likedBy: arrayRemove(currentUser.uid),
+      });
+      setIsLiked(false);
+    } else {
+      await updateDoc(postRef, {
+        likes: increment(1),
+        likedBy: arrayUnion(currentUser.uid),
+      });
+      setIsLiked(true);
+    }
   };
   return (
-    <div className="flex flex-row gap-4 justify-center mt-4">
-      <button
-        className="hover:bg-white rounded-md w-36 transition-all"
-        onClick={() => handleLike(postId)}
-      >
-        Like
-      </button>
-      <button className="hover:bg-white rounded-md w-36 transition-all">
-        Comment
-      </button>
+    <div className="flex flex-col mt-4">
+      <div className="flex flex-row gap-4 justify-end mr-2">
+        <div className="flex gap-2 items-center">
+          {isLiked ? (
+            <SolidThumbsUp fill="lime" className="text-black" />
+          ) : (
+            <ThumbsUp />
+          )}
+          <span>{post.likes}</span>
+        </div>
+        <div className="flex gap-2 items-center">
+          <MessageSquareIcon />
+          <span>{post.comments?.length}</span>
+        </div>
+      </div>
+      <div className="flex flex-row gap-4 justify-center mt-4">
+        <button
+          className="hover:bg-white rounded-md w-36 transition-all"
+          onClick={handleLike}
+        >
+          Like
+        </button>
+        <button
+          className="hover:bg-white rounded-md w-36 transition-all"
+          onClick={() => handleOpenModal(post.id)}
+        >
+          Comment
+        </button>
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 
+
 export default function Navbar() {
   const [openLoginModal, setOpenLoginModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -54,7 +55,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="flex justify-around items-center bg-[#242424] w-full h-[68px] fixed text-white z-10">
+      <nav className="flex justify-around items-center bg-[#242424] w-full h-[68px] fixed text-white z-10 border-b">
         <div className="flex gap-2">
           <figure className="w-[48px] ml-4 sm:w-[40px] sm:h-[40px]">
             <Image src={logo} alt="WebCraft Logo" className="invert" />
@@ -66,17 +67,28 @@ export default function Navbar() {
         </div>
 
         {user ? (
-          <div>
-            <span className="mr-8">Welcome, {username ? username : user.email}</span>
-            <button onClick={handleLogout}>Logout</button>
+          <div className="flex justify-center items-center">
+            <span className="mr-8">
+              Welcome, {username ? username : user.email}
+            </span>
+            <div className="relative group">
+            <button
+              onClick={handleLogout}
+              className="bg-black border border-white rounded-md h-12 w-24 text-white font-bold text-lg overflow-hidden relative"
+            >
+              <span className="absolute inset-0 hover:bg-gradient-to-r from-transparent via-white to-transparent bg-[length:500%_100%] bg-left group-hover:animate-shine flex justify-center items-center">Logout</span>
+            </button>
+          </div>
           </div>
         ) : (
-          <button
-            className="bg-white h-14 w-14 text-red-500"
-            onClick={handleOpenLoginModal}
-          >
-            Login
-          </button>
+          <div className="relative group">
+            <button
+              onClick={handleOpenLoginModal}
+              className="bg-black border border-white rounded-md h-12 w-24 text-white font-bold text-lg overflow-hidden relative"
+            >
+              <span className="absolute inset-0 hover:bg-gradient-to-r from-transparent via-white to-transparent bg-[length:500%_100%] bg-left group-hover:animate-shine flex justify-center items-center">Login</span>
+            </button>
+          </div>
         )}
       </nav>
       {openLoginModal && <AuthSignin onClose={handleCloseLoginModal} />}
