@@ -36,6 +36,7 @@ export default function CommentModal({
 }: CommentModalProps) {
   const [user] = useAuthState(auth);
   const [content, setContent] = useState<string>("");
+  const [visibleItems, setVisibleItems] = useState(5);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +65,19 @@ export default function CommentModal({
     }
   };
 
+  const loadMoreItems = () => {
+    const nextVisibleitems = visibleItems + 5;
+    setVisibleItems(nextVisibleitems);
+
+    if (nextVisibleitems >= post.comments?.length) {
+      document.getElementById("loadmore")!.style.display = "none";
+    }
+  };
+
+  // function CommentActions({
+
+  // })
+
   return (
     <Dialog open={modalOpen} onOpenChange={setModalOpen}>
       <DialogContent className="w-full max-w-2xl p-4 md:p-8 lg:p-12 mx-auto h-full max-h-[90vh] overflow-y-auto">
@@ -75,16 +89,16 @@ export default function CommentModal({
             {post.content}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-2 max-h-[70vh] overflow-y-auto">
-          {post.comments?.map((comment) => (
+        <div className="flex flex-col gap-6 max-h-[60vh] overflow-y-auto pr-1">
+          {post.comments?.slice(0, visibleItems).map((comment) => (
             <div key={comment.id} className="flex">
               <div className="bg-blue-200 rounded-full border border-red-500 h-10 w-10 m-1"></div>
-              <div className="flex flex-col ml-2">
+              <div className="flex flex-col ml-2 gap-1">
                 <div className="text-sm bg-slate-300 rounded-sm p-2">
                   <h2 className="font-bold">{comment.userName}</h2>
                   <p>{comment.content}</p>
                 </div>
-                <div className="flex flex-row text-xs gap-4">
+                <div className="flex flex-row text-xs gap-5">
                   <p className="text-gray-500 text-xs">
                     {timeAgo(comment.timestamp?.toDate())}
                   </p>
@@ -99,8 +113,19 @@ export default function CommentModal({
               </div>
             </div>
           ))}
+          <div className="col-md-12 text-center">
+          {visibleItems < post.comments?.length && (
+            <button
+              id="loadmore"
+              className="rounded-sm bg-lime-200 w-40 h-8"
+              onClick={loadMoreItems}
+            >
+              Load More
+            </button>
+          )}
         </div>
-        <div className="flex items-center mt-4">
+        </div>
+        <div className="flex items-center mt-4 fixed bottom-3 right-3">
           <div className="bg-blue-600 rounded-full border border-red-500 h-10 w-10 mr-3 text-center">
             YOU
           </div>
@@ -117,6 +142,7 @@ export default function CommentModal({
             <Send className="w-5 h-5" />
           </button>
         </div>
+        
       </DialogContent>
     </Dialog>
   );

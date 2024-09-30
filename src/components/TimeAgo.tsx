@@ -5,33 +5,33 @@ export function timeAgo(date: string | Date): string {
 
   let interval = Math.floor(seconds / 31536000); // Years
   if (interval >= 1) {
-    return interval + "y";
+    return interval + " yr";
   }
 
   interval = Math.floor(seconds / 2592000); // Months
   if (interval >= 1) {
-    return interval + "m";
+    return interval + " mth";
   }
 
   interval = Math.floor(seconds / 604800); // Weeks
   if (interval >= 1) {
-    return interval + "w";
+    return interval + " wk";
   }
 
   interval = Math.floor(seconds / 86400); // Days
   if (interval >= 1) {
-    return interval + "d";
+    return interval + " day";
   }
 
   interval = Math.floor(seconds / 3600); // Hours
   if (interval >= 1) {
-    return interval + "h";
+    return interval + " hr";
   }
 
   interval = Math.floor(seconds / 60); // Minutes
   if (interval >= 1) {
-    return interval + "m";
+    return interval + " min";
   }
 
-  return Math.floor(seconds) + "s";
+  return Math.floor(seconds) + " sec";
 }

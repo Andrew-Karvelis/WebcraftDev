@@ -1,9 +1,11 @@
 export interface Comment {
   id: string;
   userName: string;
+  userTitle: string;
   content: string;
   timestamp: any;
   likes: number;
+  likedBy: string[];
 }
 
 export interface Post {
